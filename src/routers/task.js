@@ -31,7 +31,6 @@ router.get('/tasks', auth , async (req, res) => {
     match.completed = req.query.completed === 'true'
     
   }
-  console.log(sort)
     
     try {
         await req.user.populate({
@@ -40,15 +39,12 @@ router.get('/tasks', auth , async (req, res) => {
           options : {
             limit : parseInt(req.query.limit),
             skip : parseInt(req.query.skip),
-            sort: {
-              completed : 1
-            }
+            sort
           }
         }).execPopulate()
         
         res.send(req.user.tasks)
     } catch (e) {
-        console.log(e)
         res.status(500).send()
     }
 })
@@ -58,6 +54,7 @@ router.get('/tasks/:id', auth , async (req, res) => {
 
     try {
         const task = await Task.findOne({_id, owner : req.user._id})
+        task.populate('owner').exec
 
         if (!task) {
             return res.status(404).send("Bhag Bhosdike!!")
@@ -95,7 +92,6 @@ router.patch('/tasks/:id', auth , async (req, res) => {
 router.delete('/tasks/:id', auth, async (req, res) => {
     const _id = req.params.id;
     try {
-        const tasssk = await Task.findOne({_id, owner : req.user._id})
         const task = await Task.deleteOne({_id, owner : req.user._id})
 
         if (!task) {
